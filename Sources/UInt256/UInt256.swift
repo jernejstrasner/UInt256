@@ -142,81 +142,89 @@ extension UInt256 : BinaryInteger {
     }
 
     public static func /(lhs: UInt256, rhs: UInt256) -> UInt256 {
-        var left = lhs.value
-        var right = rhs.value
-        var result = vU256()
-        vU256Divide(&left, &right, &result, nil)
-        return UInt256(result)
+        var r = lhs
+        r /= rhs
+        return r
     }
 
     public static func /=(lhs: inout UInt256, rhs: UInt256) {
+        var left = lhs.value
         var right = rhs.value
-        var result = vU256()
-        vU256Divide(&lhs.value, &right, &result, nil)
-        lhs.value = result
+        vU256Divide(&left, &right, &lhs.value, nil)
     }
 
     public static func %(lhs: UInt256, rhs: UInt256) -> UInt256 {
-        var left = lhs.value
-        var right = rhs.value
-        var result = vU256()
-        vU256Mod(&left, &right, &result)
-        return UInt256(result)
+        var r = lhs
+        r %= rhs
+        return r
     }
 
     public static func %=(lhs: inout UInt256, rhs: UInt256) {
+        var left = lhs.value
         var right = rhs.value
-        var result = vU256()
-        vU256Mod(&lhs.value, &right, &result)
-        lhs.value = result
+        vU256Mod(&left, &right, &lhs.value)
     }
 
     public static func +(lhs: UInt256, rhs: UInt256) -> UInt256 {
-        var left = lhs.value
-        var right = rhs.value
-        var result = vU256()
-        vU256Add(&left, &right, &result)
-        return UInt256(result)
+        var r = lhs
+        r += rhs
+        return r
     }
 
     public static func +=(lhs: inout UInt256, rhs: UInt256) {
+        var left = lhs.value
         var right = rhs.value
-        var result = vU256()
-        vU256Add(&lhs.value, &right, &result)
-        lhs.value = result
+        vU256Add(&left, &right, &lhs.value)
     }
 
     public static func -(lhs: UInt256, rhs: UInt256) -> UInt256 {
-        return UInt256()
+        var r = lhs
+        r -= rhs
+        return r
     }
 
     public static func -=(lhs: inout UInt256, rhs: UInt256) {
-
+        var left = lhs.value
+        var right = rhs.value
+        vU256Sub(&left, &right, &lhs.value)
     }
 
     public static func *(lhs: UInt256, rhs: UInt256) -> UInt256 {
-        return UInt256()
+        var r = lhs
+        r *= rhs
+        return r
     }
 
     public static func *=(lhs: inout UInt256, rhs: UInt256) {
-
+        var left = lhs.value
+        var right = rhs.value
+        vU256HalfMultiply(&left, &right, &lhs.value)
     }
 
     public static func &=(lhs: inout UInt256, rhs: UInt256) {
-
+        for (i, e) in lhs.enumerated() {
+            lhs[i] &= e
+        }
     }
 
     public static func |=(lhs: inout UInt256, rhs: UInt256) {
-
+        for (i, e) in lhs.enumerated() {
+            lhs[i] |= e
+        }
     }
 
     public static func ^=(lhs: inout UInt256, rhs: UInt256) {
-
+        for (i, e) in lhs.enumerated() {
+            lhs[i] ^= e
+        }
     }
 
     public static prefix func ~(x: UInt256) -> UInt256 {
-        // TODO
-        return UInt256()
+        var result = UInt256()
+        for (i, e) in x.enumerated() {
+            result[i] = ~e
+        }
+        return result
     }
 
     public static func <<=<RHS>(lhs: inout UInt256, rhs: RHS) where RHS : BinaryInteger {
