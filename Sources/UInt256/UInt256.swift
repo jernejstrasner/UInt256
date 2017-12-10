@@ -43,15 +43,6 @@ public struct UInt256 {
         }
     }
 
-    public static func <<(lhs: UInt256, rhs: UInt32) -> UInt256 {
-        var num = lhs.value
-        var result = vU256()
-        vLL256Shift(&num, rhs, &result)
-        var int = UInt256()
-        int.value = result
-        return int
-    }
-
     private init(_ value: vU256) {
         self.value = value
     }
@@ -229,11 +220,19 @@ extension UInt256 : BinaryInteger {
     }
 
     public static func <<=<RHS>(lhs: inout UInt256, rhs: RHS) where RHS : BinaryInteger {
-
+        guard let shift = UInt32(exactly: rhs) else {
+            fatalError("The rigth hand side value has to be convertable to UInt32")
+        }
+        var num = lhs.value
+        vLL256Shift(&num, shift, &lhs.value)
     }
 
     public static func >>=<RHS>(lhs: inout UInt256, rhs: RHS) where RHS : BinaryInteger {
-
+        guard let shift = UInt32(exactly: rhs) else {
+            fatalError("The rigth hand side value has to be convertable to UInt32")
+        }
+        var num = lhs.value
+        vLR256Shift(&num, shift, &lhs.value)
     }
 
 }
