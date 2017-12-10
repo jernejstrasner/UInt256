@@ -78,13 +78,17 @@ extension UInt256 : ExpressibleByStringLiteral {
 
 }
 
-extension UInt256 /*: BinaryInteger*/ {
+extension UInt256 : BinaryInteger {
 
-    static var isSigned: Bool {
-        return false
+    public init?<T>(exactly source: T) where T : BinaryInteger {
+        // TODO
     }
 
-    init?<T>(exactly source: T) where T : BinaryFloatingPoint {
+    public init<T>(_ source: T) where T : BinaryInteger {
+        // TODO
+    }
+
+    public init?<T>(exactly source: T) where T : BinaryFloatingPoint {
         // TODO: proper floating point type initialization
         if let i = UInt64(exactly: source) {
             self.init(i)
@@ -92,32 +96,32 @@ extension UInt256 /*: BinaryInteger*/ {
         return nil
     }
 
-    init<T>(_ source: T) where T : BinaryFloatingPoint {
+    public init<T>(_ source: T) where T : BinaryFloatingPoint {
         // TODO: proper floating point type initialization
         self.init(UInt64(source))
     }
 
-    init<T>(truncatingIfNeeded source: T) where T : BinaryInteger {
+    public init<T>(truncatingIfNeeded source: T) where T : BinaryInteger {
         // TODO: proper integer type initialization
         self.init(UInt64(truncatingIfNeeded: source))
     }
 
-    init<T>(clamping source: T) where T : BinaryInteger {
+    public init<T>(clamping source: T) where T : BinaryInteger {
         // TODO: proper integer type initialization
         self.init(UInt64(clamping: source))
     }
 
-    typealias Words = UInt256
+    public typealias Words = [UInt]
 
-    var words: Words {
-        return self
+    public var words: Words {
+        return self.map{ UInt($0) }
     }
 
-    var bitWidth: Int {
+    public var bitWidth: Int {
         return 256
     }
 
-    var trailingZeroBitCount: Int {
+    public var trailingZeroBitCount: Int {
         var c = 0
         for b in self.reversed() {
             if b.trailingZeroBitCount == 0 {
@@ -126,6 +130,24 @@ extension UInt256 /*: BinaryInteger*/ {
             c += b.trailingZeroBitCount
         }
         return c
+    }
+
+    public var hashValue: Int {
+        return Array(self).withUnsafeBufferPointer{ Int(murmur3(buffer: $0)) }
+    }
+
+    public typealias Magnitude = UInt256
+
+    public var magnitude: UInt256 {
+        return self
+    }
+
+    public var description: String {
+        return self.map{ String($0) }.joined()
+    }
+
+    public static var isSigned: Bool {
+        return false
     }
 
     public static func /(lhs: UInt256, rhs: UInt256) -> UInt256 {
@@ -171,6 +193,47 @@ extension UInt256 /*: BinaryInteger*/ {
         var result = vU256()
         vU256Add(&lhs.value, &right, &result)
         lhs.value = result
+    }
+
+    public static func -(lhs: UInt256, rhs: UInt256) -> UInt256 {
+        return UInt256()
+    }
+
+    public static func -=(lhs: inout UInt256, rhs: UInt256) {
+
+    }
+
+    public static func *(lhs: UInt256, rhs: UInt256) -> UInt256 {
+        return UInt256()
+    }
+
+    public static func *=(lhs: inout UInt256, rhs: UInt256) {
+
+    }
+
+    public static func &=(lhs: inout UInt256, rhs: UInt256) {
+
+    }
+
+    public static func |=(lhs: inout UInt256, rhs: UInt256) {
+
+    }
+
+    public static func ^=(lhs: inout UInt256, rhs: UInt256) {
+
+    }
+
+    public static prefix func ~(x: UInt256) -> UInt256 {
+        // TODO
+        return UInt256()
+    }
+
+    public static func <<=<RHS>(lhs: inout UInt256, rhs: RHS) where RHS : BinaryInteger {
+
+    }
+
+    public static func >>=<RHS>(lhs: inout UInt256, rhs: RHS) where RHS : BinaryInteger {
+
     }
 
 }
@@ -293,4 +356,29 @@ extension UInt64 {
         self.init(0)
     }
 
+}
+
+/// Calculates a Murmur hash for a UInt32 buffer
+/// Adapted from https://en.wikipedia.org/wiki/MurmurHash
+private func murmur3(buffer: UnsafeBufferPointer<UInt32>) -> UInt32 {
+    var hash: UInt32 = 0
+    var k: UInt32 = 0
+
+    for chunk in buffer {
+        k = chunk &* 0xcc9e2d51
+        k = (k << 15) | (k >> 17)
+        k = k &* 0x1b873593
+        hash ^= k
+        hash = (hash << 13) | (hash >> 19)
+        hash = ((hash &* 5) &+ 0xe6546b64)
+    }
+
+    hash ^= UInt32(buffer.count * 4)
+    hash ^= hash >> 16
+    hash = hash &* 0x85ebca6b
+    hash ^= hash >> 13
+    hash = hash &* 0xc2b2ae35
+    hash ^= hash >> 16
+
+    return hash
 }
