@@ -105,7 +105,12 @@ extension UInt256 : BinaryInteger {
     public typealias Words = [UInt]
 
     public var words: Words {
-        return self.map{ UInt($0) }
+        assert(UInt.bitWidth == 64, "32bit platform?")
+        return Swift.stride(from: 0, to: self.count - 1, by: 2).map{
+            let a = UInt(self[$0]) << 32
+            let b = UInt(self[$0+1])
+            return a + b
+        }.reversed()
     }
 
     public var bitWidth: Int {
@@ -113,14 +118,9 @@ extension UInt256 : BinaryInteger {
     }
 
     public var trailingZeroBitCount: Int {
-        var c = 0
-        for b in self.reversed() {
-            if b.trailingZeroBitCount == 0 {
-                return c
-            }
-            c += b.trailingZeroBitCount
-        }
-        return c
+        let reversed = self.reversed()
+        let i = reversed.index(where: { $0 != 0 }) ?? 7
+        return i * UInt32.bitWidth + reversed[i].trailingZeroBitCount
     }
 
     public var hashValue: Int {
@@ -329,38 +329,6 @@ extension UInt256 : CustomDebugStringConvertible {
             let s = String($0, radix: 16)
             return repeatElement("0", count: 8 - s.count) + s
         }).joined()
-    }
-
-}
-
-extension UInt32 {
-
-    public init(_ i: UInt256) {
-        for x in i {
-            if x > 0 {
-                self.init(x)
-                return
-            }
-        }
-        self.init(0)
-    }
-
-}
-
-extension UInt64 {
-
-    public init(_ i: UInt256) {
-        for (y, x) in i.enumerated() {
-            if x > 0 {
-                if y+1 < i.endIndex {
-                    self.init(UInt64(x) << 32 + UInt64(i[y+1]))
-                } else {
-                    self.init(x)
-                }
-                return
-            }
-        }
-        self.init(0)
     }
 
 }
